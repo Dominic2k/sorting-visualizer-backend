@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -36,10 +37,17 @@ public class AuthController {
     
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> getCurrentUser(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(Map.of(
-                "email", user.getEmail(),
-                "displayName", user.getDisplayName(),
-                "createdAt", user.getCreatedAt()
-        ));
+        Map<String, Object> response = new HashMap<>();
+        response.put("email", user.getEmail());
+        response.put("displayName", user.getDisplayName());
+        response.put("createdAt", user.getCreatedAt());
+        
+        // Include avatarUrl if available (for OAuth users)
+        if (user.getAvatarUrl() != null) {
+            response.put("avatarUrl", user.getAvatarUrl());
+        }
+        
+        return ResponseEntity.ok(response);
     }
 }
+

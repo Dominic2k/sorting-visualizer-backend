@@ -17,11 +17,25 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
     
-    @Column(nullable = false)
+    // Password có thể null cho OAuth users
+    @Column(nullable = true)
     private String passwordHash;
     
     @Column(nullable = false)
     private String displayName;
+    
+    // Avatar URL từ Google
+    @Column
+    private String avatarUrl;
+    
+    // Provider (LOCAL, GOOGLE)
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider = AuthProvider.LOCAL;
+    
+    // Provider ID (sub từ Google)
+    @Column
+    private String providerId;
     
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -52,6 +66,15 @@ public class User {
     public String getDisplayName() { return displayName; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }
     
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    
+    public AuthProvider getProvider() { return provider; }
+    public void setProvider(AuthProvider provider) { this.provider = provider; }
+    
+    public String getProviderId() { return providerId; }
+    public void setProviderId(String providerId) { this.providerId = providerId; }
+    
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
@@ -69,6 +92,10 @@ public class User {
         public Builder email(String email) { user.email = email; return this; }
         public Builder passwordHash(String passwordHash) { user.passwordHash = passwordHash; return this; }
         public Builder displayName(String displayName) { user.displayName = displayName; return this; }
+        public Builder avatarUrl(String avatarUrl) { user.avatarUrl = avatarUrl; return this; }
+        public Builder provider(AuthProvider provider) { user.provider = provider; return this; }
+        public Builder providerId(String providerId) { user.providerId = providerId; return this; }
         public User build() { return user; }
     }
 }
+

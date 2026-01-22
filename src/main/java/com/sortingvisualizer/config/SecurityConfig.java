@@ -1,6 +1,7 @@
 package com.sortingvisualizer.config;
 
 import com.sortingvisualizer.security.JwtAuthenticationFilter;
+import com.sortingvisualizer.security.OAuth2AuthenticationSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,11 +19,15 @@ public class SecurityConfig {
     
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CorsConfigurationSource corsConfigurationSource;
+    private final OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler;
     
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, 
-                         CorsConfigurationSource corsConfigurationSource) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            CorsConfigurationSource corsConfigurationSource,
+            OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.corsConfigurationSource = corsConfigurationSource;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
     
     @Bean
@@ -34,10 +39,19 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/oauth2/**").permitAll()
+                .requestMatchers("/login/oauth2/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated())
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+            // OAuth2 Login Configuration
+            .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(auth -> auth
+                    .baseUri("/oauth2/authorization"))
+                .redirectionEndpoint(redirect -> redirect
+                    .baseUri("/login/oauth2/code/*"))
+                .successHandler(oAuth2SuccessHandler))
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
@@ -48,3 +62,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+
